@@ -47,13 +47,6 @@ jobs:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-    - name: Login to GitHub Container Registry
-      uses: docker/login-action@v3
-      with:
-        registry: ghcr.io
-        username: ${{ github.repository_owner }}
-        password: ${{ secrets.GITHUB_TOKEN }}
-
     - name: Build and push Docker images
       uses: docker/build-push-action@v5
       with:
@@ -63,13 +56,11 @@ jobs:
         tags: |
           scsjoel/scswiki:canary
           scsjoel/scswiki:canary-${{ env.REL_VERSION_STRICT }}
-          ghcr.io/scsjoel/scswiki:canary
-          ghcr.io/scsjoel/scswiki:canary-${{ env.REL_VERSION_STRICT }}
 
     - name: Extract compiled files
       run: |
         mkdir -p _dist
-        docker create --name wiki ghcr.io/scsjoel/scswiki:canary-$REL_VERSION_STRICT
+        docker create --name wiki scsjoel/scswiki:canary-$REL_VERSION_STRICT
         docker cp wiki:/wiki _dist
         docker rm wiki
         rm _dist/wiki/config.yml
@@ -153,13 +144,6 @@ jobs:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-    - name: Login to GitHub Container Registry
-      uses: docker/login-action@v3
-      with:
-        registry: ghcr.io
-        username: ${{ github.repository_owner }}
-        password: ${{ secrets.GITHUB_TOKEN }}
-
     - name: Download a Build Artifact
       uses: actions/download-artifact@v4
       with:
@@ -181,7 +165,6 @@ jobs:
         push: true
         tags: |
           scsjoel/scswiki:canary-${{ matrix.docker }}-${{ env.REL_VERSION_STRICT }}
-          ghcr.io/scsjoel/scswiki:canary-${{ matrix.docker }}-${{ env.REL_VERSION_STRICT }}
 
   windows:
     name: Windows Build
@@ -246,24 +229,15 @@ jobs:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-    - name: Login to GitHub Container Registry
-      uses: docker/login-action@v3
-      with:
-        registry: ghcr.io
-        username: ${{ github.repository_owner }}
-        password: ${{ secrets.GITHUB_TOKEN }}
-
     - name: Create and Push Manifests
       run: |
         echo "Creating the manifests..."
 
         docker manifest create requarks/wiki:beta-$REL_VERSION_STRICT requarks/wiki:canary-$REL_VERSION_STRICT requarks/wiki:canary-arm64-$REL_VERSION_STRICT
-        docker manifest create ghcr.io/requarks/wiki:beta-$REL_VERSION_STRICT ghcr.io/requarks/wiki:canary-$REL_VERSION_STRICT ghcr.io/requarks/wiki:canary-arm64-$REL_VERSION_STRICT
 
         echo "Pushing the manifests..."
 
         docker manifest push -p requarks/wiki:beta-$REL_VERSION_STRICT
-        docker manifest push -p ghcr.io/requarks/wiki:beta-$REL_VERSION_STRICT
 
   release:
     name: Publish Release Images
@@ -287,13 +261,6 @@ jobs:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-    - name: Login to GitHub Container Registry
-      uses: docker/login-action@v3
-      with:
-        registry: ghcr.io
-        username: ${{ github.repository_owner }}
-        password: ${{ secrets.GITHUB_TOKEN }}
-
     - name: Create and Push Manifests
       run: |
         echo "Fetching semver tool..."
@@ -311,10 +278,6 @@ jobs:
         docker manifest create requarks/wiki:$MAJOR requarks/wiki:canary-$REL_VERSION_STRICT requarks/wiki:canary-arm64-$REL_VERSION_STRICT
         docker manifest create requarks/wiki:$MAJORMINOR requarks/wiki:canary-$REL_VERSION_STRICT requarks/wiki:canary-arm64-$REL_VERSION_STRICT
         docker manifest create requarks/wiki:latest requarks/wiki:canary-$REL_VERSION_STRICT requarks/wiki:canary-arm64-$REL_VERSION_STRICT
-        docker manifest create ghcr.io/requarks/wiki:$REL_VERSION_STRICT ghcr.io/requarks/wiki:canary-$REL_VERSION_STRICT ghcr.io/requarks/wiki:canary-arm64-$REL_VERSION_STRICT
-        docker manifest create ghcr.io/requarks/wiki:$MAJOR ghcr.io/requarks/wiki:canary-$REL_VERSION_STRICT ghcr.io/requarks/wiki:canary-arm64-$REL_VERSION_STRICT
-        docker manifest create ghcr.io/requarks/wiki:$MAJORMINOR ghcr.io/requarks/wiki:canary-$REL_VERSION_STRICT ghcr.io/requarks/wiki:canary-arm64-$REL_VERSION_STRICT
-        docker manifest create ghcr.io/requarks/wiki:latest ghcr.io/requarks/wiki:canary-$REL_VERSION_STRICT ghcr.io/requarks/wiki:canary-arm64-$REL_VERSION_STRICT
 
         echo "Pushing the manifests..."
 
@@ -322,10 +285,6 @@ jobs:
         docker manifest push -p requarks/wiki:$MAJOR
         docker manifest push -p requarks/wiki:$MAJORMINOR
         docker manifest push -p requarks/wiki:latest
-        docker manifest push -p ghcr.io/requarks/wiki:$REL_VERSION_STRICT
-        docker manifest push -p ghcr.io/requarks/wiki:$MAJOR
-        docker manifest push -p ghcr.io/requarks/wiki:$MAJORMINOR
-        docker manifest push -p ghcr.io/requarks/wiki:latest
 
     - name: Download Linux Build
       uses: actions/download-artifact@v4
@@ -369,22 +328,22 @@ jobs:
     #     SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
     #     SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
 
-    - name: Notify Telegram Channel
-      uses: appleboy/telegram-action@v0.1.1
-      with:
-        to: ${{ secrets.TELEGRAM_TO }}
-        token: ${{ secrets.TELEGRAM_TOKEN }}
-        format: markdown
-        disable_web_page_preview: true
-        message: |
-          Wiki.js *${{ github.ref_name }}* has been released!
-          See [release notes](https://github.com/requarks/wiki/releases) for details.
+    # - name: Notify Telegram Channel
+    #   uses: appleboy/telegram-action@v0.1.1
+    #   with:
+    #     to: ${{ secrets.TELEGRAM_TO }}
+    #     token: ${{ secrets.TELEGRAM_TOKEN }}
+    #     format: markdown
+    #     disable_web_page_preview: true
+    #     message: |
+    #       Wiki.js *${{ github.ref_name }}* has been released!
+    #       See [release notes](https://github.com/requarks/wiki/releases) for details.
 
-    - name: Notify Discord Channel
-      uses: sebastianpopp/discord-action@v2.0
-      with:
-        webhook: ${{ secrets.DISCORD_WEBHOOK }}
-        message: Wiki.js ${{ github.ref_name }} has been released! See https://github.com/requarks/wiki/releases for details.
+    # - name: Notify Discord Channel
+    #   uses: sebastianpopp/discord-action@v2.0
+    #   with:
+    #     webhook: ${{ secrets.DISCORD_WEBHOOK }}
+    #     message: Wiki.js ${{ github.ref_name }} has been released! See https://github.com/requarks/wiki/releases for details.
 
   # build-do-image:
   #   name: Build DigitalOcean Image
