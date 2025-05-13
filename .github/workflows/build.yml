@@ -202,11 +202,11 @@ jobs:
       run: |
         echo "Creating the manifests..."
 
-        docker manifest create requarks/wiki:beta-$REL_VERSION_STRICT requarks/wiki:canary-$REL_VERSION_STRICT requarks/wiki:canary-arm64-$REL_VERSION_STRICT
+        docker manifest create scsjoel/scswiki:beta-$REL_VERSION_STRICT scsjoel/scswiki:canary-$REL_VERSION_STRICT scsjoel/scswiki:canary-arm64-$REL_VERSION_STRICT
 
         echo "Pushing the manifests..."
 
-        docker manifest push -p requarks/wiki:beta-$REL_VERSION_STRICT
+        docker manifest push -p scsjoel/scswiki:beta-$REL_VERSION_STRICT
 
   release:
     name: Publish Release Images
@@ -242,45 +242,14 @@ jobs:
         echo "Using major $MAJOR and minor $MINOR..."
         echo "Creating the manifests..."
 
-        docker manifest create requarks/wiki:$REL_VERSION_STRICT requarks/wiki:canary-$REL_VERSION_STRICT requarks/wiki:canary-arm64-$REL_VERSION_STRICT
-        docker manifest create requarks/wiki:$MAJOR requarks/wiki:canary-$REL_VERSION_STRICT requarks/wiki:canary-arm64-$REL_VERSION_STRICT
-        docker manifest create requarks/wiki:$MAJORMINOR requarks/wiki:canary-$REL_VERSION_STRICT requarks/wiki:canary-arm64-$REL_VERSION_STRICT
-        docker manifest create requarks/wiki:latest requarks/wiki:canary-$REL_VERSION_STRICT requarks/wiki:canary-arm64-$REL_VERSION_STRICT
+        docker manifest create scsjoel/scswiki:$REL_VERSION_STRICT scsjoel/scswiki:canary-$REL_VERSION_STRICT scsjoel/scswiki:canary-arm64-$REL_VERSION_STRICT
+        docker manifest create scsjoel/scswiki:$MAJOR scsjoel/scswiki:canary-$REL_VERSION_STRICT scsjoel/scswiki:canary-arm64-$REL_VERSION_STRICT
+        docker manifest create scsjoel/scswiki:$MAJORMINOR scsjoel/scswiki:canary-$REL_VERSION_STRICT scsjoel/scswiki:canary-arm64-$REL_VERSION_STRICT
+        docker manifest create scsjoel/scswiki:latest scsjoel/scswiki:canary-$REL_VERSION_STRICT scsjoel/scswiki:canary-arm64-$REL_VERSION_STRICT
 
         echo "Pushing the manifests..."
 
-        docker manifest push -p requarks/wiki:$REL_VERSION_STRICT
-        docker manifest push -p requarks/wiki:$MAJOR
-        docker manifest push -p requarks/wiki:$MAJORMINOR
-        docker manifest push -p requarks/wiki:latest
-
-    - name: Download Linux Build
-      uses: actions/download-artifact@v4
-      with:
-        name: drop
-        path: drop
-
-    - name: Download Windows Build
-      uses: actions/download-artifact@v4
-      with:
-        name: drop-win
-        path: drop-win
-
-    - name: Generate Changelog
-      id: changelog
-      uses: Requarks/changelog-action@v1
-      with:
-        token: ${{ github.token }}
-        tag: ${{ github.ref_name }}
-        writeToFile: false
-
-    - name: Update GitHub Release
-      uses: ncipollo/release-action@v1.12.0
-      with:
-        allowUpdates: true
-        draft: false
-        makeLatest: true
-        name: ${{ github.ref_name }}
-        body: ${{ steps.changelog.outputs.changes }}
-        token: ${{ github.token }}
-        artifacts: 'drop/wiki-js.tar.gz,drop-win/wiki-js-windows.tar.gz'
+        docker manifest push -p scsjoel/scswiki:$REL_VERSION_STRICT
+        docker manifest push -p scsjoel/scswiki:$MAJOR
+        docker manifest push -p scsjoel/scswiki:$MAJORMINOR
+        docker manifest push -p scsjoel/scswiki:latest
