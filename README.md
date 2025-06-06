@@ -523,3 +523,12 @@ This project exists thanks to all the people who contribute. [[Contribute]](http
 
 ![Porkbun](https://static.requarks.io/logo/porkbun.png)  
 [Porkbun](https://www.porkbun.com) for providing domain registration services.
+
+# Custom Docker Setup
+Use the compose.sample.yml file
+
+#### Create installation directory for Wiki.js
+mkdir -p /etc/wiki
+
+#### Generate DB secret
+openssl rand -base64 32 > /etc/wiki/.db-secret

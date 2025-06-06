@@ -1,0 +1,53 @@
+name: wiki
+services:
+  db:
+    image: postgres:17
+    container_name: db
+    restart: unless-stopped
+    hostname: db
+    environment:
+      POSTGRES_DB: wiki
+      POSTGRES_USER: wiki
+      POSTGRES_PASSWORD_FILE: /etc/wiki/.db-secret
+    volumes:
+      - /etc/wiki/.db-secret:/etc/wiki/.db-secret:ro
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - wikinet
+
+  wiki:
+    image: scsjoel/scswiki
+    container_name: wiki
+    restart: unless-stopped
+    hostname: wiki
+    environment:
+      DB_TYPE: postgres
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_PASS_FILE: /etc/wiki/.db-secret
+      DB_USER: wiki
+      DB_NAME: wiki
+      UPGRADE_COMPANION: 1
+    volumes:
+      - /etc/wiki/.db-secret:/etc/wiki/.db-secret:ro
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.wiki.rule=Host(`wiki.example.com`)  # Replace with your actual domain
+      - traefik.http.routers.wiki.entrypoints=websecure
+      - traefik.http.routers.wiki.tls.certresolver=main-resolver
+      - traefik.http.services.wiki.loadbalancer.server.port=3000
+    networks:
+      - wikinet
+      - traefik
+    depends_on:
+      - db
+
+networks:
+  wikinet:
+    name: wikinet
+  traefik:
+    external: true
+
+volumes:
+  pgdata:
+    name: pgdata
