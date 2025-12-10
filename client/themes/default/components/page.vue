@@ -11,7 +11,9 @@
       :temporary='$vuetify.breakpoint.smAndDown'
       v-model='navShown'
       :right='$vuetify.rtl'
+      :width='navWidth'
       )
+      .drawer-resize-handle(@mousedown.prevent='startResize')
       vue-scroll(:ops='scrollStyle')
         nav-sidebar(:color='$vuetify.theme.dark ? `grey darken-4-d4` : `primary`', :items='sidebarDecoded', :nav-mode='navMode')
 
@@ -493,6 +495,8 @@ export default {
   },
   data() {
     return {
+      navWidth: 300,
+      isResizing: false,
       navShown: false,
       navExpanded: false,
       upBtnShown: false,
@@ -648,6 +652,32 @@ export default {
     })
   },
   methods: {
+    startResize() {
+      this.isResizing = true
+      document.addEventListener('mousemove', this.handleResize)
+      document.addEventListener('mouseup', this.stopResize)
+      document.body.style.cursor = 'col-resize'
+      document.body.style.userSelect = 'none'
+    },
+    handleResize(e) {
+      if (!this.isResizing) return
+      let newWidth
+      if (this.$vuetify.rtl) {
+        newWidth = window.innerWidth - e.clientX
+      } else {
+        newWidth = e.clientX
+      }
+      if (newWidth < 200) newWidth = 200
+      if (newWidth > 600) newWidth = 600
+      this.navWidth = newWidth
+    },
+    stopResize() {
+      this.isResizing = false
+      document.removeEventListener('mousemove', this.handleResize)
+      document.removeEventListener('mouseup', this.stopResize)
+      document.body.style.cursor = ''
+      document.body.style.userSelect = ''
+    },
     goHome () {
       window.location.assign('/')
     },
@@ -709,6 +739,28 @@ export default {
 </script>
 
 <style lang="scss">
+
+.drawer-resize-handle {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  cursor: col-resize;
+  z-index: 10;
+  transition: background 0.2s;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.3);
+  }
+
+  .v-navigation-drawer--right & {
+    left: 0;
+  }
+
+  .v-navigation-drawer:not(.v-navigation-drawer--right) & {
+    right: 0;
+  }
+}
 
 .breadcrumbs-nav {
   .v-btn {
